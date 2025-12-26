@@ -24,7 +24,7 @@ function renderQuiz() {
     card.className = "card";
     
     // 1. Add the question text
-    let cardContent = `<h3>${qIdx + 1}. ${q.question}</h3>`;
+    let cardContent = `<h3> ${q.question}</h3>`;
     
     // 2. NEW: Check if 'img' exists and is not empty
     if (q.img && q.img.trim() !== "") {
@@ -69,3 +69,4 @@ function resetQuiz() {
 }
 
 loadQuiz();
+
