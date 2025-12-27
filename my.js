@@ -1,72 +1,69 @@
 let questions = [];
-let userSelections = JSON.parse(localStorage.getItem("myQuizProgress")) || {};
+        let userSelections = JSON.parse(localStorage.getItem("myQuizProgress")) || {};
 
-// 1. Fetch data from the separate JSON file
-async function loadQuiz() {
-  try {
-    const response = await fetch("questions.json");
-    questions = await response.json();
-    renderQuiz();
-  } catch (error) {
-    document.getElementById("quiz-box").innerHTML =
-      "Error loading questions. Ensure you are using a local server.";
-  }
-}
+        async function loadQuiz() {
+            try {
+                const response = await fetch("questions.json");
+                questions = await response.json();
+                renderQuiz();
+            } catch (error) {
+                document.getElementById("quiz-box").innerHTML = "<p class='text-center text-red-500'>Error loading data.</p>";
+            }
+        }
 
-// 2. Display the questions
+        function renderQuiz() {
+            const quizBox = document.getElementById("quiz-box");
+            quizBox.innerHTML = "";
 
-function renderQuiz() {
-  const quizBox = document.getElementById("quiz-box");
-  quizBox.innerHTML = "";
+            questions.forEach((q, qIdx) => {
+                const card = document.createElement("div");
+                card.className = "card";
+                
+                let cardContent = `<h3>${q.question}</h3>`;
+                if (q.img && q.img.trim() !== "") {
+                    cardContent += `<img src="${q.img}" class="question-img">`;
+                }
+                card.innerHTML = cardContent;
 
-  questions.forEach((q, qIdx) => {
-    const card = document.createElement("div");
-    card.className = "card";
-    
-    // 1. Add the question text
-    let cardContent = `<h3> ${q.question}</h3>`;
-    
-    // 2. NEW: Check if 'img' exists and is not empty
-    if (q.img && q.img.trim() !== "") {
-      cardContent += `<img src="${q.img}" alt="Question Image" style="max-width:300px; height:auto; margin-bottom:15px; display:block;">`;
-    }
-    
-    card.innerHTML = cardContent;
+                // FIX APPLIED HERE: Using ["options:"] to match your JSON
+                const optionsObj = q["options"]; 
+                
+                if (optionsObj) {
+                    Object.entries(optionsObj).forEach(([key, text]) => {
+                        const optDiv = document.createElement("div");
+                        optDiv.className = "option";
+                        optDiv.innerHTML = `<span class="mr-3 font-bold opacity-40">${key}.</span> <p class="optext">${text}</p> `;
 
-    Object.entries(q.options).forEach(([key, text]) => {
-      const optDiv = document.createElement("div");
-      optDiv.className = "option";
-      optDiv.innerText = `${key}: ${text}`;
+                        if (userSelections[qIdx]) {
+                            optDiv.classList.add("disabled");
+                            if (key === q.answer) optDiv.classList.add("correct");
+                            if (key === userSelections[qIdx] && key !== q.answer)
+                                optDiv.classList.add("wrong");
+                        } else {
+                            optDiv.onclick = () => selectOption(qIdx, key);
+                        }
+                        card.appendChild(optDiv);
+                    });
+                }
 
-      // Persistence Logic
-      if (userSelections[qIdx]) {
-        optDiv.classList.add("disabled");
-        if (key === q.answer) optDiv.classList.add("correct");
-        if (key === userSelections[qIdx] && key !== q.answer)
-          optDiv.classList.add("wrong");
-      } else {
-        optDiv.onclick = () => selectOption(qIdx, key);
-      }
+                quizBox.appendChild(card);
+            });
+        }
 
-      card.appendChild(optDiv);
-    });
-    quizBox.appendChild(card);
-  });
-}
+        function selectOption(qIdx, selectedKey) {
+            userSelections[qIdx] = selectedKey;
+            localStorage.setItem("myQuizProgress", JSON.stringify(userSelections));
+            renderQuiz();
+        }
 
-// 3. Handle user click
-function selectOption(qIdx, selectedKey) {
-  userSelections[qIdx] = selectedKey;
-  localStorage.setItem("myQuizProgress", JSON.stringify(userSelections));
-  renderQuiz(); // Refresh to show colors
-}
+        function resetQuiz() {
+            if(confirm("Reset all progress?")) {
+                localStorage.removeItem("myQuizProgress");
+                userSelections = {};
+                renderQuiz();
+                window.scrollTo(0,0);
+            }
+        }
 
-// 4. Clear LocalStorage
-function resetQuiz() {
-  localStorage.removeItem("myQuizProgress");
-  userSelections = {};
-  renderQuiz();
-}
 
-loadQuiz();
-
+        loadQuiz();
