@@ -1,5 +1,6 @@
+const STORAGE_KEY = "myQuizProgress2024";
 let questions = [];
-        let userSelections = JSON.parse(localStorage.getItem("myQuizProgress")) || {};
+        let userSelections = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
 
         async function loadQuiz() {
             try {
@@ -52,13 +53,13 @@ let questions = [];
 
         function selectOption(qIdx, selectedKey) {
             userSelections[qIdx] = selectedKey;
-            localStorage.setItem("myQuizProgress", JSON.stringify(userSelections));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(userSelections));
             renderQuiz();
         }
 
         function resetQuiz() {
             if(confirm("Reset all progress?")) {
-                localStorage.removeItem("myQuizProgress");
+                localStorage.removeItem(STORAGE_KEY);
                 userSelections = {};
                 renderQuiz();
                 window.scrollTo(0,0);
